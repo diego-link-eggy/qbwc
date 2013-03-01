@@ -29,7 +29,7 @@ class QbwcController < ApplicationController
       render :nothing => true
       return
     end
-
+    params[:client_uuid]
     req = request
     puts "========== #{ params["Envelope"]["Body"].keys.first}  =========="
     res = QBWC::SoapWrapper.route_request(req)

@@ -29,7 +29,7 @@ module QBWC
   # Job definitions
   mattr_reader :jobs
   @@jobs = {}
-  
+
   mattr_reader :on_error
   @@on_error = 'stopOnError'
   # Do processing after session termination
@@ -45,6 +45,9 @@ module QBWC
   # Check Rails Cache for Parser before boot
   mattr_accessor :warm_boot
   @@warm_boot = false
+
+  # Per-client-id sessions
+  @@sessions = {}
 
 class << self
 
@@ -68,6 +71,15 @@ class << self
     else
       @@parser = ::Quickbooks::API[api] 
     end
+  end
+
+  def session(client_id)
+    session = @@sessions[client_id]
+    if session.nil? or session.finished?
+      session = QBWC::Session.new(client_id)
+      @@sessions[client_id] = session
+    end
+    return session
   end
 
   # Allow configuration overrides

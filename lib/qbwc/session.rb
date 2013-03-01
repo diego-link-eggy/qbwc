@@ -4,9 +4,8 @@ class QBWC::Session
   attr_reader :current_job, :current_request, :saved_requests, :progress
   attr_reader :qbwc_iterator_queue, :qbwc_iterating
 
-  @@session = nil
-
-  def initialize
+  def initialize(client_id)
+    @client_id = client_id
     @current_job = nil
     @current_request = nil
     @saved_requests = []
@@ -14,14 +13,17 @@ class QBWC::Session
     @qbwc_iterator_queue = []
     @qbwc_iterating = false
 
-    @@session = self
-    reset
-  end
+    jobs = QBWC.jobs.values.select do |job| 
+      if job.enabled? 
+        job.generate_requests(client_id)
+        true
+      else
+        false
+      end
+    end
 
-  def reset
-    @progress = QBWC.jobs.blank? ? 100 : 0
-    enabled_jobs.map { |j| j.reset }
-    @requests = build_request_generator(enabled_jobs)
+    @progress = jobs.blank? ? 100 : 0
+    @requests = build_request_generator(jobs)
   end
 
   def finished?
@@ -55,11 +57,7 @@ class QBWC::Session
   end
 
   private
-
-  def enabled_jobs
-    QBWC.jobs.values.select { |j| j.enabled? }
-  end
-
+  
   def build_request_generator(jobs)
     Fiber.new do
       jobs.each do |j|
@@ -100,16 +98,4 @@ class QBWC::Session
       end
     end
   end
-
-class << self
-
-  def new_or_unfinished
-    (!@@session || @@session.finished?) ? new : @@session
-  end
-
-end
-
-	def self.session
-		@@session
-	end
 end

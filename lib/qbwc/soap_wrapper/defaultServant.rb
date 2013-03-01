@@ -1,5 +1,10 @@
  
 class QBWC::QBWebConnectorSvcSoap
+
+  def initialize(client_id)
+    @client_id = client_id
+  end
+
   # SYNOPSIS
   #   serverVersion(parameters)
   #
