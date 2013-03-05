@@ -58,7 +58,7 @@ class QBWC::QBWebConnectorSvcSoap
   #
 
   def sendRequestXML(parameters)
-    qbwc_session = QBWC::Session.new_or_unfinished
+    qbwc_session = QBWC.session(@client_id)
     next_request = qbwc_session.next
     QBWC::SendRequestXMLResponse.new( next_request ? wrap_in_version(next_request.request) : '') 
   end
@@ -73,7 +73,7 @@ class QBWC::QBWebConnectorSvcSoap
   #   parameters      ReceiveResponseXMLResponse - {http://developer.intuit.com/}receiveResponseXMLResponse
   #
   def receiveResponseXML(response)
-    qbwc_session = QBWC::Session.new_or_unfinished
+    qbwc_session = QBWC.session(@client_id)
     qbwc_session.response = response.response
     QBWC::ReceiveResponseXMLResponse.new(qbwc_session.progress)
   end
@@ -117,7 +117,7 @@ class QBWC::QBWebConnectorSvcSoap
   #
   def closeConnection(parameters)
     #p [parameters]
-    qbwc_session = QBWC::Session.session
+    qbwc_session = QBWC.session(@client_id)
     if qbwc_session && qbwc_session.finished?
       qbwc_session.current_request.process_response unless qbwc_session.current_request.blank?
     end

@@ -8,8 +8,7 @@ class QBWC::SoapWrapper
     @router.mapping_registry = DefaultMappingRegistry::EncodedRegistry
     @router.literal_mapping_registry = DefaultMappingRegistry::LiteralRegistry
     @conn_data = ::SOAP::StreamHandler::ConnectionData.new
-
-    servant = QBWebConnectorSvcSoap.new
+    servant = QBWebConnectorSvcSoap.new(client_id)
     QBWebConnectorSvcSoap::Methods.each do |definitions|
       opt = definitions.last
       if opt[:request_style] == :document

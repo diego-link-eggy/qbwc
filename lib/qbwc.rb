@@ -55,6 +55,10 @@ class << self
     @@jobs[name] = Job.new(name, &block)
   end
   
+  def create_request(qbxml, block) 
+    QBWC::Request.new(qbxml, block)
+  end
+
   def on_error=(reaction)
     raise 'Quickbooks type must be :qb or :qbpos' unless [:stop, :continue].include?(reaction)
     @@on_error = "stopOnError" if reaction == :stop
