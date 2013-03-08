@@ -51,6 +51,11 @@ module QBWC
 
 class << self
 
+  def reset
+    @@sessions = {}
+    @@jobs = {}
+  end
+
   def add_job(name, &block)
     @@jobs[name] = Job.new(name, &block)
   end
