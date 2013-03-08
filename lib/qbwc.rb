@@ -96,8 +96,6 @@ end
   
 end
 
-require 'fiber'
-
 #Todo Move this to Autolaod
 require 'qbwc/soap_wrapper/default'
 require 'qbwc/soap_wrapper/defaultMappingRegistry'

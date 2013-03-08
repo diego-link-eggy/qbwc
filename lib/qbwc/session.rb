@@ -5,77 +5,36 @@ class QBWC::Session
   attr_reader :qbwc_iterator_queue, :qbwc_iterating
 
   def initialize(client_id)
-    @client_id = client_id
-    @current_job = nil
     @current_request = nil
-    @saved_requests = []
-
-    @qbwc_iterator_queue = []
-    @qbwc_iterating = false
-
-    jobs = QBWC.jobs.values.select do |job| 
-      if job.enabled? 
-        job.generate_requests(client_id)
-        true
-      else
-        false
-      end
+    @requests = []
+    QBWC.jobs.values.each do |job|
+      @requests.push(*job.generate_requests(client_id))
     end
-
-    @progress = jobs.blank? ? 100 : 0
-    @requests = build_request_generator(jobs)
+    @initial_request_count = @requests.count
+    @progress = @initial_request_count == 0 ? 100 : 0
   end
 
   def finished?
     @progress == 100
   end
 
-  def next
-    @requests.alive? ? @requests.resume : nil
+  def next!
+    @current_request = @requests.shift
+    if @current_request == nil || @initial_request_count == 0
+      @progress = 100
+    else
+      @progress = (@requests.count + 1) / @initial_request_count
+    end
+    return @current_request
   end
 
   def response=(qbxml_response)
-    begin
-      @current_request.response = QBWC.parser.qbxml_to_hash(qbxml_response)
-      parse_response_header(@current_request.response)
-
-      if QBWC.delayed_processing
-        @saved_requests << @current_request
-      else
-        @current_request.process_response
-      end
-    rescue => e
-      puts "An error occured in QBWC::Session: #{e}"
-      puts e
-      puts e.backtrace
-    end
-
-  end
-
-  def process_saved_responses
-    @saved_requests.each { |r| r.process_response }
+    @current_request.response = QBWC.parser.qbxml_to_hash(qbxml_response)
+    parse_response_header(@current_request.response)
+    @current_request.process_response
   end
 
   private
-  
-  def build_request_generator(jobs)
-    Fiber.new do
-      jobs.each do |j|
-        @current_job = j
-        while (r = next_request)
-          @current_request = r
-          Fiber.yield r
-        end
-      end
-
-      @progress = 100
-      nil
-    end
-  end
-
-  def next_request
-    (@qbwc_iterating == true && @qbwc_iterator_queue.shift) || @current_job.next
-  end
 
   def parse_response_header(response)
     return unless response['xml_attributes']
@@ -83,18 +42,16 @@ class QBWC::Session
     status_code, status_severity, status_message, iterator_remaining_count, iterator_id = \
       response['xml_attributes'].values_at('statusCode', 'statusSeverity', 'statusMessage', 
                                                'iteratorRemainingCount', 'iteratorID') 
-                                               
+
     if status_severity == 'Error' || status_code.to_i > 1 || response.keys.size <= 1
       @current_request.error = "QBWC ERROR: #{status_code} - #{status_message}"
+      puts @current_request.error
     else
       if iterator_remaining_count.to_i > 0
-        @qbwc_iterating = true
-        new_request = @current_request.to_hash
-        new_request.delete('xml_attributes')
-        new_request.values.first['xml_attributes'] = {'iterator' => 'Continue', 'iteratorID' => iterator_id}
-        @qbwc_iterator_queue << QBWC::Request.new(new_request, @current_request.response_proc)
-      else
-        @qbwc_iterating = false
+        continue_request = @current_request.to_hash
+        continue_request.delete('xml_attributes')
+        continue_request.values.first['xml_attributes'] = {'iterator' => 'Continue', 'iteratorID' => iterator_id}
+        @requests.unshift(QBWC::Request.new(continue_request, @current_request.response_proc))
       end
     end
   end
