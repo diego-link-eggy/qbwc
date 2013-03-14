@@ -1,7 +1,7 @@
 class QBWC::Session
   include Enumerable
 
-  attr_reader :current_job, :current_request, :saved_requests, :progress
+  attr_reader :current_job, :current_request, :saved_requests, :finished
   attr_reader :qbwc_iterator_queue, :qbwc_iterating
 
   def initialize(client_id)
@@ -10,28 +10,22 @@ class QBWC::Session
     QBWC.jobs.values.each do |job|
       @requests.push(*job.generate_requests(client_id))
     end
-    @initial_request_count = @requests.count
-    @progress = @initial_request_count == 0 ? 100 : 0
+    @finished = @requests.blank?
   end
 
   def finished?
-    @progress == 100
+    finished
   end
 
   def next!
     @current_request = @requests.shift
-    if @current_request == nil || @initial_request_count == 0
-      @progress = 100
-    else
-      @progress = (@requests.count + 1) / @initial_request_count
-    end
-    return @current_request
   end
 
-  def response=(qbxml_response)
+  def process_response(qbxml_response)
     @current_request.response = QBWC.parser.qbxml_to_hash(qbxml_response)
     parse_response_header(@current_request.response)
     @current_request.process_response
+    @finished = @requests.blank?
   end
 
   private

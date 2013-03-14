@@ -74,8 +74,8 @@ class QBWC::QBWebConnectorSvcSoap
   #
   def receiveResponseXML(response)
     qbwc_session = QBWC.session(@client_id)
-    qbwc_session.response = response.response
-    QBWC::ReceiveResponseXMLResponse.new(qbwc_session.progress)
+    finished = qbwc_session.process_response(response.response)
+    QBWC::ReceiveResponseXMLResponse.new(finished ? 100 : 0)
   end
 
   # SYNOPSIS
