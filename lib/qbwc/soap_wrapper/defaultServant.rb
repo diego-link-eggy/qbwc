@@ -1,8 +1,9 @@
  
 class QBWC::QBWebConnectorSvcSoap
 
-  def initialize(client_id)
+  def initialize(client_id, company_file_path)
     @client_id = client_id
+    @company_file_path = company_file_path
   end
 
   def serverVersion(parameters)
@@ -14,7 +15,7 @@ class QBWC::QBWebConnectorSvcSoap
   end
   
   def authenticate(parameters)                              
-    QBWC::AuthenticateResponse.new([QBWC.username, QBWC.company_file_path]) #path to company file
+    QBWC::AuthenticateResponse.new([@client_id, @company_file_path])
   end
 
   def sendRequestXML(parameters)
