@@ -3,12 +3,12 @@ require 'soap/rpc/standaloneServer'
 class QBWC::SoapWrapper
   include QBWC
 
-  def initialize(client_id)
+  def initialize(client_id, company_file_path)
     @router = ::SOAP::RPC::Router.new('QBWebConnectorSvcSoap')
     @router.mapping_registry = DefaultMappingRegistry::EncodedRegistry
     @router.literal_mapping_registry = DefaultMappingRegistry::LiteralRegistry
     @conn_data = ::SOAP::StreamHandler::ConnectionData.new
-    servant = QBWebConnectorSvcSoap.new(client_id)
+    servant = QBWebConnectorSvcSoap.new(client_id, company_file_path)
     QBWebConnectorSvcSoap::Methods.each do |definitions|
       opt = definitions.last
       if opt[:request_style] == :document

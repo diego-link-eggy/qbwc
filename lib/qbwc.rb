@@ -82,10 +82,10 @@ class << self
     end
   end
 
-  def session(client_id)
+  def session(client_id, company_file_path="")
     session = @@sessions[client_id]
     if session.nil? or session.finished?
-      session = QBWC::Session.new(client_id)
+      session = QBWC::Session.new(client_id, company_file_path)
       @@sessions[client_id] = session
     end
     return session
