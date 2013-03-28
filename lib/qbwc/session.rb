@@ -1,11 +1,12 @@
 class QBWC::Session
   include Enumerable
 
-  attr_reader :current_request
+  attr_reader :current_request, :error
 
   def initialize(client_id)
     @client_id = client_id
     @current_request = nil
+    @error = nil
     generate_requests
     @finished = @requests.blank?
   end
@@ -22,8 +23,15 @@ class QBWC::Session
     @current_request.response = QBWC.parser.qbxml_to_hash(qbxml_response)
     parse_response_header(@current_request.response)
     @current_request.process_response
-    generate_requests if @requests.blank?
+    generate_requests if not @error and @requests.blank?
     @finished = @requests.blank?
+  end
+
+  def error=(error)
+    ap "QBWC user error set: #{error}"
+    @error = error
+    @requests = []
+    @finished = true
   end
 
   private
