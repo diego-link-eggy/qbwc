@@ -1,20 +1,17 @@
 class QBWC::Session
   include Enumerable
 
-  attr_reader :current_job, :current_request, :saved_requests, :finished
-  attr_reader :qbwc_iterator_queue, :qbwc_iterating
+  attr_reader :current_request
 
   def initialize(client_id)
+    @client_id = client_id
     @current_request = nil
-    @requests = []
-    QBWC.jobs.values.each do |job|
-      @requests.push(*job.generate_requests(client_id))
-    end
+    generate_requests
     @finished = @requests.blank?
   end
 
   def finished?
-    finished
+    @finished
   end
 
   def next!
@@ -25,6 +22,7 @@ class QBWC::Session
     @current_request.response = QBWC.parser.qbxml_to_hash(qbxml_response)
     parse_response_header(@current_request.response)
     @current_request.process_response
+    generate_requests if @requests.blank?
     @finished = @requests.blank?
   end
 
@@ -47,6 +45,13 @@ class QBWC::Session
         continue_request.values.first['xml_attributes'] = {'iterator' => 'Continue', 'iteratorID' => iterator_id}
         @requests.unshift(QBWC::Request.new(continue_request, @current_request.response_proc))
       end
+    end
+  end
+
+  def generate_requests
+    @requests = []
+    QBWC.jobs.values.each do |job|
+      @requests.push(*job.generate_requests(@client_id))
     end
   end
 end
