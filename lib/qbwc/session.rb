@@ -8,7 +8,6 @@ class QBWC::Session
     @current_request = nil
     @error = nil
     @uuid = UUIDTools::UUID.timestamp_create.to_s
-    @closed = false
     generate_requests
     @finished = @requests.blank?
 

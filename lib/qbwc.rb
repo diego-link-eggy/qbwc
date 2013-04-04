@@ -53,7 +53,7 @@ class << self
   end
 
   def add_job(name, &block)
-    @@jobs[name] = Job.new(name, &block)
+    @@jobs[name] = block
   end
   
   def create_request(qbxml, block) 
@@ -87,4 +87,3 @@ require 'qbwc/soap_wrapper/QBWebConnectorSvc'
 require 'qbwc/soap_wrapper'
 require 'qbwc/session'
 require 'qbwc/request'
-require 'qbwc/job'

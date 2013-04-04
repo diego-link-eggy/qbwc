@@ -15,7 +15,7 @@ class QBWC::QBWebConnectorSvcSoap
   end
   
   def authenticate(parameters) # Create new session here
-    QBWC.sessions[client_id] = QBWC::Session.new client_id
+    QBWC.sessions[@client_id] = QBWC::Session.new @client_id
     QBWC::AuthenticateResponse.new([@client_id, @company_file_path])
   end
 
