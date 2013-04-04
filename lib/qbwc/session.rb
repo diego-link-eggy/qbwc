@@ -18,14 +18,6 @@ class QBWC::Session
     @finished
   end
 
-  def closed?
-    @closed
-  end
-  
-  def close!
-    @closed = true
-  end
-
   def next!
     @current_request = @requests.shift
   end
