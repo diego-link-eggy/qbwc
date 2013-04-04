@@ -39,12 +39,8 @@ module QBWC
   @@delayed_processing = false
 
   # Quickbooks Type (either :qb or :qbpos)
-  mattr_reader :api, :parser
-  @@api = :qb #::Quickbooks::API[:qb]
-  
-  # Check Rails Cache for Parser before boot
-  mattr_accessor :warm_boot
-  @@warm_boot = false
+  mattr_reader :parser
+  @@parser = ::Quickbooks::API.instance
 
   # Per-client-id sessions
   @@sessions = {}
@@ -68,18 +64,6 @@ class << self
     raise 'Quickbooks type must be :qb or :qbpos' unless [:stop, :continue].include?(reaction)
     @@on_error = "stopOnError" if reaction == :stop
     @@on_error = "continueOnError" if reaction == :continue
-  end
-  
-  def api=(api)
-    raise 'Quickbooks type must be :qb or :qbpos' unless [:qb, :qbpos].include?(api)
-    @@api = api
-    if @@warm_boot
-      ::Rails.logger.warn "using warm boot"
-      @@parser = ::Rails.cache.read("qb_api_#{api}") || ::Quickbooks::API[api] 
-      ::Rails.cache.write("qb_api_#{api}", @@parser)
-    else
-      @@parser = ::Quickbooks::API[api] 
-    end
   end
 
   def session(client_id)

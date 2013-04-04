@@ -10,9 +10,6 @@ QBWC.configure do |c|
   #Minimum Quickbooks Version Required for use in QBXML Requests
   c.min_version = 7.0
   
-  #Quickbooks Type (either :qb or :qbpos)
-  c.api = :qb
-  
   #Quickbooks Support URL provided in QWC File
   c.support_site_url = "localhost:3000"
   
@@ -31,9 +28,5 @@ QBWC.configure do |c|
   # :stop
   # :continue
   c.on_error = :stop
-
-  # Rails Cache Hot Boot  (Check the rails cache for existing API object to speed app boot) 
-  # This Feature is Unstable and is Extreme Alpha.  IT is known not to work
-  # c.warm_boot = false
   
 end
