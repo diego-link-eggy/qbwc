@@ -43,6 +43,7 @@ class QBWC::QBWebConnectorSvcSoap
   def closeConnection(parameters)
     #p [parameters]
     qbwc_session = QBWC.session(@client_id)
+    qbwc_session.close!
     if qbwc_session && qbwc_session.finished?
       qbwc_session.current_request.process_response unless qbwc_session.current_request.blank?
     end
@@ -53,11 +54,7 @@ private
 
   # wraps xml in version header
   def wrap_in_version(xml_rq)
-    if QBWC.api == :qbpos
-      %Q( <?qbposxml version="#{QBWC.min_version}"?> ) + xml_rq
-    else
-      %Q( <?qbxml version="#{QBWC.min_version}"?> ) + xml_rq
-    end
+    %Q( <?qbxml version="#{QBWC.min_version}"?> ) + xml_rq
   end
 
 end

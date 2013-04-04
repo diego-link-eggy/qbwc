@@ -1,18 +1,29 @@
 class QBWC::Session
   include Enumerable
 
-  attr_reader :current_request, :error
+  attr_reader :current_request, :error, :uuid
 
   def initialize(client_id)
     @client_id = client_id
     @current_request = nil
     @error = nil
+    @uuid = UUIDTools::UUID.timestamp_create.to_s
+    @closed = false
     generate_requests
     @finished = @requests.blank?
+
   end
 
   def finished?
     @finished
+  end
+
+  def closed?
+    @closed
+  end
+  
+  def close!
+    @closed = true
   end
 
   def next!
@@ -20,15 +31,16 @@ class QBWC::Session
   end
 
   def process_response(qbxml_response)
+
     @current_request.response = QBWC.parser.qbxml_to_hash(qbxml_response)
     parse_response_header(@current_request.response)
     @current_request.process_response
     generate_requests if not @error and @requests.blank?
+    @current_request = nil
     @finished = @requests.blank?
   end
 
   def error=(error)
-    ap "QBWC user error set: #{error}"
     @error = error
     @requests = []
     @finished = true
@@ -59,7 +71,7 @@ class QBWC::Session
   def generate_requests
     @requests = []
     QBWC.jobs.values.each do |job|
-      @requests.push(*job.generate_requests(@client_id))
+      @requests.push(*job.call(@client_id, @uuid))
     end
   end
 end
