@@ -4,70 +4,22 @@ require 'quickbooks'
 
 module QBWC
 
-  # Web connector login credentials
-  mattr_accessor :username
-  @@username = 'foo'
-  mattr_accessor :password
-  @@password = 'bar'
-  
-  # Full path to pompany file 
-  mattr_accessor :company_file_path 
-  @@company_file_path = ""
-  
   # Minimum quickbooks version required for use in qbxml requests
   mattr_accessor :min_version
   @@min_version = 3.0
-  
-  # Quickbooks support url provided in qwc file
-  mattr_accessor :support_site_url
-  @@support_site_url = 'http://google.com'
-  
-  # Quickbooks owner id provided in qwc file
-  mattr_accessor :owner_id
-  @@owner_id = '{57F3B9B1-86F1-4fcc-B1EE-566DE1813D20}'
-  
-  # Job definitions
-  mattr_reader :jobs
-  @@jobs = {}
-
+ 
   mattr_reader :on_error
   @@on_error = 'stopOnError'
-  # Do processing after session termination
-  # Enabling this option will speed up qbwc session time but will necessarily eat
-  # up more memory since every response must be stored until it is processed. 
-  mattr_accessor :delayed_processing
-  @@delayed_processing = false
-
-  # Quickbooks Type (either :qb or :qbpos)
-  mattr_reader :parser
-  @@parser = ::Quickbooks::API.instance
-
-  # Per-client-id sessions
-  @@sessions = {}
 
 class << self
 
-  def reset
-    @@sessions = {}
-    @@jobs = {}
-  end
-
-  def add_job(name, &block)
-    @@jobs[name] = block
-  end
-  
-  def create_request(qbxml, block) 
-    QBWC::Request.new(qbxml, block)
+  def create_request(qbxml) 
+    QBWC::Request.new(qbxml)
   end
 
   def on_error=(reaction)
-    raise 'Quickbooks type must be :qb or :qbpos' unless [:stop, :continue].include?(reaction)
-    @@on_error = "stopOnError" if reaction == :stop
-    @@on_error = "continueOnError" if reaction == :continue
-  end
-
-  def sessions
-    @@sessions
+    raise "Invalid error response #{reaction}" unless [:stop, :continue].include?(reaction)
+    @@on_error = (reaction == :stop) ? "stopOnError" : "continueOnError"
   end
 
   # Allow configuration overrides

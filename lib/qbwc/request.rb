@@ -39,7 +39,7 @@ class QBWC::Request
       @request = wrapped_request
     end
 
-    #Wrap the 
-    %Q( <?qbxml version="#{QBWC.min_version}"?> ) + QBWC.parser.hash_to_qbxml(request)
+    #Wrap the request in the 
+    %Q( <?qbxml version="#{QBWC.min_version}"?> #{::Quickbooks::API.instance.hash_to_qbxml(request)}) + 
   end
 end
