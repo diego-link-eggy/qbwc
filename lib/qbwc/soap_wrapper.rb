@@ -3,19 +3,22 @@ require 'soap/rpc/standaloneServer'
 class QBWC::SoapWrapper
   include QBWC
 
-  def initialize(client_id, company_file_path)
+  def initialize(servant)
     @router = ::SOAP::RPC::Router.new('QBWebConnectorSvcSoap')
     @router.mapping_registry = DefaultMappingRegistry::EncodedRegistry
     @router.literal_mapping_registry = DefaultMappingRegistry::LiteralRegistry
     @conn_data = ::SOAP::StreamHandler::ConnectionData.new
-    servant = QBWebConnectorSvcSoap.new(client_id, company_file_path)
-    QBWebConnectorSvcSoap::Methods.each do |definitions|
-      opt = definitions.last
-      if opt[:request_style] == :document
-        @router.add_document_operation(servant, *definitions)
-      else
-        @router.add_rpc_operation(servant, *definitions)
-      end
+    servant.soap_actions.each do |action_name|
+      @router.add_document_operation(servant, 
+      [
+        "http://developer.intuit.com/#{action_name}",
+        action_name,
+        [ ["in", "parameters", ["::SOAP::SOAPElement", "http://developer.intuit.com/", "#{action_name}"]],
+          ["out", "parameters", ["::SOAP::SOAPElement", "http://developer.intuit.com/", "#{action_name}Response"]] ],
+        { :request_style =>  :document, :request_use =>  :literal,
+          :response_style => :document, :response_use => :literal,
+          :faults => {} }
+      ]
     end
   end
 
@@ -28,4 +31,5 @@ class QBWC::SoapWrapper
     res_data = @router.route(@conn_data) 
     res_data.send_string
   end
+
 end
