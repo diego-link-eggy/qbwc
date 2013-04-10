@@ -5,12 +5,11 @@ class QBWC::Request
 
   def initialize(request)
     #Handle Cases for a request passed in as a Hash or String
-        @request = request
-
+    @request = request
 
     #Allow strings of QBXML to be passed in directly. Request is stored as a hash
-    if @request.is_a?(String)
-      @request = QBWC.parser.qbxml_to_hash @request
+    @request = QBWC.parser.qbxml_to_hash(@request) if @request.is_a?(String)
+
   end
 
   def parse_response!(response)
@@ -39,7 +38,7 @@ class QBWC::Request
       @request = wrapped_request
     end
 
-    #Wrap the request in the 
-    %Q( <?qbxml version="#{QBWC.min_version}"?> #{::Quickbooks::API.instance.hash_to_qbxml(request)}) + 
+    #Wrap the request in the minimum qbwc version
+    %Q( <?qbxml version="#{QBWC.min_version}"?> #{::Quickbooks::API.instance.hash_to_qbxml(request)})
   end
 end
