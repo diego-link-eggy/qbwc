@@ -9,7 +9,7 @@ class QBWC::SoapWrapper
     router.literal_mapping_registry = DefaultMappingRegistry::LiteralRegistry
     connection_data = ::SOAP::StreamHandler::ConnectionData.new
     servant.soap_actions.each do |action_name|
-      router.add_document_operation(servant, [
+      router.add_document_operation(servant,
         "http://developer.intuit.com/#{action_name}",
         action_name,
         [ ["in", "parameters", ["::SOAP::SOAPElement", "http://developer.intuit.com/", "#{action_name}"]],
@@ -17,7 +17,6 @@ class QBWC::SoapWrapper
         { :request_style =>  :document, :request_use =>  :literal,
           :response_style => :document, :response_use => :literal,
           :faults => {} }
-        ]
       )
     end
 
@@ -26,7 +25,7 @@ class QBWC::SoapWrapper
     connection_data.soapaction = nil
 
     router.external_ces = nil 
-    response_data = router.route(@connection_data) 
+    router.route(connection_data)
   end
 
 end
