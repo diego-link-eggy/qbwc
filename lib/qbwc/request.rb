@@ -30,7 +30,7 @@ class QBWC::Request
     end
   end
 
-  def to_qbxml
+  def qbxml
     #Verify that the request is properly wrapped with qbxml_msg_rq and xml_attributes for on_error events
     unless @request.keys.include?(:qbxml_msgs_rq)
       wrapped_request = { :qbxml_msgs_rq => {:xml_attributes => { "onError"=> QBWC::on_error } } } 

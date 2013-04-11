@@ -54,7 +54,6 @@ end
 end
 
 #Todo Move this to Autolaod
-require 'qbwc/soap_wrapper/default'
-require 'qbwc/soap_wrapper/defaultMappingRegistry'
-require 'qbwc/soap_wrapper'
+require 'qbwc/default'
+require 'qbwc/defaultMappingRegistry'
 require 'qbwc/request'
